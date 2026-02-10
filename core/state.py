@@ -74,9 +74,11 @@ def collect_main_state():
 
 def collect_training_state(state_object, training_function_name, check_stat_gains=False):
   chain = config.TRAINING_CHAINS[training_function_name]
-
   if "meta_training" in chain or "most_stat_gain" in chain:
     check_stat_gains = True
+  if state_object['energy_level'] < config.SKIP_TRAINING_ENERGY:
+    debug(f"Skip collecting training due to skip energy config. {int(state_object['energy_level'])} < {config.SKIP_TRAINING_ENERGY}")
+    return state_object
 
   if device_action.locate_and_click("assets/buttons/training_btn.png", min_search_time=get_secs(5), region_ltrb=constants.SCREEN_BOTTOM_BBOX):
     if not device_action.locate("assets/buttons/back_btn.png", min_search_time=get_secs(2), region_ltrb=constants.SCREEN_BOTTOM_BBOX):
