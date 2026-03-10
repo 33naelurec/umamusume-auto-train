@@ -406,11 +406,11 @@ BAD_STATUS_EFFECTS={
     "Effect":"Character's mood may decrease by one stage.",
   },
   "Slacker":{
-    "Severity":2,
+    "Severity":3,
     "Effect":"Character may not show up for training.",
   },
   "Slow Metabolism":{
-    "Severity":1,
+    "Severity":2,
     "Effect":"Character cannot gain Speed from speed training.",
   },
   "Under the Weather":{

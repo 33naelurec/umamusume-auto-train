@@ -212,11 +212,16 @@ class Strategy:
       action.available_actions.append("do_recreation")
       action["can_mood_increase"] = True
       # mood increase required setting the function to do_recreation
+      if not action.func:
+        action.func = "do_recreation"
+      debug(f"Recreation needed due to mood difference: {state['mood_difference']}")
+    elif state["current_mood"] != "GREAT" and state["current_mood"] != "UNKNOWN":
+      debug(f"Recreation available. Current mood: {state['current_mood']} != GREAT and UNKNOWN")
       action.func = "do_recreation"
       info(f"Recreation needed due to mood difference: {mood_diff}")
       return action
 
-    if state['energy_level'] > config.NEVER_REST_ENERGY:
+    if state['energy_level'] > 70:
       return action
     if state['date_event_available'] and action["can_mood_increase"] and action['max_energy'] - action['energy_level'] > 30:
       action.func = "do_recreation"
@@ -233,12 +238,8 @@ class Strategy:
 
   # Check only unscheduled races
   def check_race(self, state, action, grades: list[str] = None):
-    if len(action.available_actions) == 0:
-      pass
-    elif len(action.available_actions) == 1 and action.available_actions[0] == 'do_training' and state.get('at_stat_cap', False):
-      pass
-    else:
-      # Never do an unscheduled race if other higher priority actions are queued up.
+    if not(state.get('at_stat_cap', False)):
+      # Never do an unscheduled race if other higher priority actions are queued up
       return action
     date = state["year"]
     if grades is not None:
