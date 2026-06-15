@@ -36,6 +36,7 @@ def collect_main_state():
   minimum_mood_junior_year_index = constants.MOOD_LIST.index(config.MINIMUM_MOOD_JUNIOR_YEAR)
   state_object["mood_difference"] = mood_index - minimum_mood_index
   state_object["mood_difference_junior_year"] = mood_index - minimum_mood_junior_year_index
+  info(f"current mood {state_object['current_mood']}, config {config.MINIMUM_MOOD}, config index {minimum_mood_index}, diff {state_object['mood_difference']}")
   debug("Before turn collection.")
   state_object["turn"] = get_turn()
   debug("Before year collection.")

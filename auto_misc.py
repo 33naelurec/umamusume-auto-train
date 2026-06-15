@@ -207,8 +207,8 @@ cm_missions_collected=False
 legend_races=False
 team_trials_entered=False
 followers_page_entered=False
-followers_max_prune_count=100
-followers_prune_min_age_days=30
+followers_max_prune_count=300
+followers_prune_min_age_days=7
 
 non_match_count=0
 previous_click_name=None
@@ -411,12 +411,14 @@ while True:
     def should_remove_follower(index):
       x_curr, y_curr, w_curr, h_curr = last_login_matches[index]
       ss = enhanced_screenshot((x_curr + w_curr + constants.GAME_WINDOW_REGION[0], y_curr, w_curr * 2, h_curr + 10))
-      login_text = extract_text(ss, allowlist=('0123456789dhago '))
+      ss.save(f"debug_{index}.png")
+      login_text = extract_text(ss, allowlist=('0123456789dhago '), use_recognize=True).replace('I', '1').replace('|', '1')
       if "h ago" in login_text:
         info(f"Remove Followers: Reached hour granularity: {login_text}")
         return False
       if "d ago" not in login_text:
         info(f"Remove Followers: Unexpected text: {login_text}")
+      info(f"SAMTEST login {login_text}")
       days_ago = int("".join(filter(str.isdigit, login_text)))
       if days_ago >= followers_prune_min_age_days:
         return True

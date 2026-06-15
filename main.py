@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import warnings
+import os
 warnings.filterwarnings(
   "ignore",
   category=UserWarning,
@@ -112,80 +113,4 @@ def focus_umamusume():
       sleep(0.2)
       target_window.restore()
       sleep(0.5)
-    bot.windows_window = target_window
-    if target_window.width > 1920 or target_window.height > 1080:
-      info("Screen bigger than standard 1080p. Initializing screen space conversions.")
-      screen_to_world_conversion_init()
-  except Exception as e:
-    error(f"Error focusing window: {e}")
-    return False
-  return True
-
-def main():
-  print("Uma Auto!")
-  config.reload_config()
-
-  if args.use_adb:
-    bot.use_adb = True
-    bot.device_id = args.use_adb
-  else:
-    bot.use_adb = config.USE_ADB
-    if config.DEVICE_ID and config.DEVICE_ID != "":
-      bot.device_id = config.DEVICE_ID
-  if focus_umamusume():
-    on_started()
-    info(f"Config: {config.CONFIG_NAME}")
-    debug(f"Config:")
-    for name, value in vars(config).items():
-      if not name.startswith("__"):
-          debug(f"{name} = {value}")
-    career_lobby(args.dry_run_turn)
-  else:
-    error("Failed to focus Umamusume window")
-
-def hotkey_listener():
-  while True:
-    keyboard.wait(bot.hotkey)
-    if not bot.is_bot_running:
-      print("[BOT] Starting...")
-      bot.is_bot_running = True
-      t = threading.Thread(target=main, daemon=True)
-      t.start()
-    else:
-      print("[BOT] Stopping...")
-      bot.is_bot_running = False
-    sleep(0.5)
-
-def is_port_available(host, port):
-  try:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((host, port))
-    sock.close()
-    return True
-  except OSError:
-    return False
-
-def start_server():
-  host = "127.0.0.1"
-  start_port = 8000
-  end_port = 8010
-  for port in range(start_port, end_port):
-    if is_port_available(host, port):
-      bot.instance = port - start_port + 1
-      bot.hotkey = f"f{bot.instance}"
-      break
-    else:
-      print(f"[INFO] Port {port} is already in use. Trying {port + 1}...")
-
-  threading.Thread(target=hotkey_listener, daemon=True).start()
-  server_config = uvicorn.Config(app, host=host, port=port, workers=1, log_level="warning")
-  server = uvicorn.Server(server_config)
-  init_logging()
-  info(f"Press '{bot.hotkey}' to start/stop the bot.")
-  info(f"[SERVER] Open http://{host}:{port} to configure the bot.")
-  server.run()
-
-if __name__ == "__main__":
-  update_config()
-  config.reload_config()
-  start_server()
+    bot.windows_window = target

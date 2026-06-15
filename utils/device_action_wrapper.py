@@ -132,7 +132,7 @@ def match_cached_templates(cached_templates, region_ltrb=None, threshold=0.85, t
     raise ValueError(f"region_ltrb cannot be None")
   _screenshot = screenshot(region_ltrb=region_ltrb)
   results = {}
-  if args.save_images:
+  if True:
     debug_window(_screenshot, save_name=f"cached_templates_screenshot")
   for name, template in cached_templates.items():
     if args.save_images:
@@ -159,6 +159,7 @@ def multi_match_templates(templates, screenshot: np.ndarray, threshold=0.85, tex
   return results
 
 def match_template(template_path : str, screenshot : np.ndarray, threshold=0.85, text: str = "", grayscale=False, template_scaling=1.0):
+  info(f"SAMTEST: template_path type is {type(template_path)} and value is {template_path}")
   if text and args.device_debug:
     debug(text)
   if grayscale:

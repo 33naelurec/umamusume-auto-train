@@ -49,10 +49,28 @@ templates = {
   "infirmary": "assets/buttons/infirmary_btn.png",
   "claw_btn": "assets/buttons/claw_btn.png",
   "claw_btn_2": "assets/buttons/claw_btn_2.png",
-  "ok_2_btn": "assets/buttons/ok_2_btn.png"
+  "ok_2_btn": "assets/buttons/ok_2_btn.png",
+}
+
+start_templates = {
+  "add_friend_support": "assets/autor/add_friend_support.png",
+  "biko": "assets/autor/biko.png",
+  "ntr_event": "assets/autor/ntr_event.png",
+  "refresh_friends": "assets/autor/refresh_friends.png",
+  "start_career_confirm": "assets/autor/start_career_confirm.png",
+  "career": "assets/autor/career.png",
+  "next": "assets/buttons/next_btn.png",
+}
+
+resume_templates = {
+  "to_title_screen": "assets/autor/to_title_screen.png",
+  "title_screen": "assets/autor/title_screen.png",
+  "career": "assets/autor/career.png",
 }
 
 cached_templates = cache_templates(templates)
+cached_resume_templates = cache_templates(resume_templates)
+cached_start_templates = cache_templates(start_templates)
 
 unity_templates = {
   "close_btn": "assets/buttons/close_btn.png",
@@ -61,6 +79,43 @@ unity_templates = {
 }
 
 cached_unity_templates = cache_templates(unity_templates)
+
+def click_match2(matches):
+  if matches and len(matches) > 0:
+    for k, v in matches.items():
+      info(f"SAMTEST {k}, {v}, ALLK {matches.keys()}, {matches.values()}")
+      x, y, w, h = v
+      cx = x + w // 2
+      cy = y + h // 2
+    return device_action.click(target=(cx, cy), text=f"Clicked match: {k}")
+  return False
+
+def attempt_til_end(templates, tries_left=3):
+  ll = list(templates.items())
+  for i, (k, v) in enumerate(ll):
+    attempts = 3
+    while attempts >= 0:
+      attempts -= 1
+      sleep(3)
+      if(device_action.locate_and_click(v, min_search_time=get_secs(1))):
+        sleep(5)
+        if i == len(ll) - 1:
+          return True
+  return False
+
+  matches = device_action.match_cached_templates(cached_resume_templates, stop_after_first_match=True, region_ltrb=constants.GAME_WINDOW_REGION)
+  if not matches and tries_left <= 0:
+    return False
+  if not matches:
+    sleep(5)
+    return attempt_resume_career_while_stuck(device_action.screenshot(), tries_left - 1)
+  if end_key in matches.keys() and click_match2(matches):
+    sleep(5)
+    return True
+  if click_match2(matches):
+    sleep(3)
+    return attempt_start_new_career(device_action.screenshot(), 3)
+  return False
 
 def detect_scenario():
   screenshot = device_action.screenshot()
@@ -106,7 +161,16 @@ def career_lobby(dry_run_turn=False):
       device_action.flush_screenshot_cache()
       screenshot = device_action.screenshot()
 
-      if non_match_count > 20:
+   #    if non_match_count > 0 or non_match_count > 5:
+    #     if(attempt_til_end(resume_templates)):
+      #       info("SAMTEST attempted career resume")
+        #     non_match_count = 0
+          #   continue
+        #if(attempt_til_end)):            
+         #   info("SAMTEST attempted startnew career")
+        #    non_match_count = 0
+         #   continue
+      if non_match_count > 30:
         info("Career lobby stuck, quitting.")
         complete_career_btn = device_action.locate("assets/buttons/complete_career_btn.png", min_search_time=get_secs(2))
         if complete_career_btn is not None:
@@ -310,10 +374,9 @@ def career_lobby(dry_run_turn=False):
       state_obj = collect_training_state(state_obj, training_function_name)
       if state_obj["training_locked"]:
         state_obj = collect_training_state(state_obj, training_function_name, check_stat_gains=True)
-
-      if not state_obj.get("training_results", False):
-        info("Couldn't collect training state, retrying turn from top.")
-        continue
+      # if not state_obj.get("training_results", false) and :
+        #info("couldn't collect training state, retrying turn from top.")
+        # continue
       # go to skill buy function every turn, conditions are handled inside the function.
       buy_skill(state_obj, action_count)
 

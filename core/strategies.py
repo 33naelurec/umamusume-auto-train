@@ -215,15 +215,10 @@ class Strategy:
       if not action.func:
         action.func = "do_recreation"
       debug(f"Recreation needed due to mood difference: {state['mood_difference']}")
-    elif state["current_mood"] != "GREAT" and state["current_mood"] != "UNKNOWN":
-      debug(f"Recreation available. Current mood: {state['current_mood']} != GREAT and UNKNOWN")
-      action.func = "do_recreation"
-      info(f"Recreation needed due to mood difference: {mood_diff}")
-      return action
 
     if state['energy_level'] > 70:
       return action
-    if state['date_event_available'] and action["can_mood_increase"] and action['max_energy'] - action['energy_level'] > 30:
+    if state['date_event_available'] and action["can_mood_increase"] and state['max_energy'] - state['energy_level'] > 30:
       action.func = "do_recreation"
       return action
     if state["current_mood"] != "GREAT" and state["current_mood"] != "UNKNOWN":
@@ -235,6 +230,17 @@ class Strategy:
   def check_training(self, state, action, training_type, training_template):
     # Call the training function to select best training option
     return training_type(state, training_template, action)
+
+  def is_race_better(self, oldr, newr):
+    if not oldr or oldr is None:
+      info('no_oldr')
+      return True
+    if oldr['grade'] != newr['grade']:
+      info(f"newr grade {newr['grade']}, oldr {oldr['grade']}")
+      return newr['grade'] < oldr['grade']
+    if oldr["fans"]["gained"] != newr["fans"]["gained"]:
+      return newr["fans"]["gained"] >= oldr["fans"]["gained"]
+    return True
 
   # Check only unscheduled races
   def check_race(self, state, action, grades: list[str] = None):
@@ -254,16 +260,36 @@ class Strategy:
 
     debug(f"Looking for races on date.")
     best_race_name=None
+    
+    g1_found=None
+    sprint_found=None
+    dirt_found=None
     # if there's no best race, search unscheduled races for the best race
     for race in races_on_date:
+      info(f"SAMTEST check_race {race['name']}, terr {race['terrain']}, dist {race['distance']}")
+
       if best_race_name is None:
         best_race_name = race["name"]
         best_fans_gained = race["fans"]["gained"]
+      if race["grade"] == "G1":
+        g1_found = race
+        best_race_name = race["name"]
+        break
+      if race['distance'].get('type') == 'Sprint' and self.is_race_better(sprint_found, race):
+        sprint_found = race
+      if race['terrain'] == 'Dirt' and self.is_race_better(dirt_found, race):
+        dirt_found = race
       else:
         fans_gained = race["fans"]["gained"]
         if fans_gained > best_fans_gained:
           best_race_name = race["name"]
           best_fans_gained = fans_gained
+    if g1_found:
+      best_race_name = g1_found['name']
+    elif sprint_found:
+      best_race_name = sprint_found['name']
+    elif dirt_found:
+      best_race_name = dirt_found['name']
 
     if best_race_name:
       action["race_name"] = best_race_name
