@@ -74,8 +74,11 @@ def collect_main_state():
   return state_object
 
 def collect_training_state(state_object, training_function_name, check_stat_gains=False):
-  chain = config.TRAINING_CHAINS[training_function_name]
-  if "meta_training" in chain or "most_stat_gain" in chain:
+  check_stat_gains = False
+  if state_object['energy_level'] < config.SKIP_TRAINING_ENERGY:
+    debug(f"Skip collecting training due to skip energy config. {int(state_object['energy_level'])} < {config.SKIP_TRAINING_ENERGY}")
+    return state_object
+  if training_function_name == "meta_training" or training_function_name == "most_stat_gain":
     check_stat_gains = True
   if state_object['energy_level'] < config.SKIP_TRAINING_ENERGY:
     debug(f"Skip collecting training due to skip energy config. {int(state_object['energy_level'])} < {config.SKIP_TRAINING_ENERGY}")

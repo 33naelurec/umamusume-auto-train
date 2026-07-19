@@ -215,10 +215,15 @@ class Strategy:
       if not action.func:
         action.func = "do_recreation"
       debug(f"Recreation needed due to mood difference: {state['mood_difference']}")
+    if state['date_event_available'] and action["can_mood_increase"] and state['max_energy'] - state['energy_level'] > 30:
+      debug(f"Recreation available. Current mood: {state['current_mood']} != GREAT and UNKNOWN")
+      action.func = "do_recreation"
+      info(f"Recreation needed due to mood difference: {mood_diff}")
+      return action
 
     if state['energy_level'] > 70:
       return action
-    if state['date_event_available'] and action["can_mood_increase"] and state['max_energy'] - state['energy_level'] > 30:
+    if state['date_event_available'] and action["can_mood_increase"] and action['max_energy'] - action['energy_level'] > 30:
       action.func = "do_recreation"
       return action
     if state["current_mood"] != "GREAT" and state["current_mood"] != "UNKNOWN":
